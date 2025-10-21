@@ -2,12 +2,14 @@
 
 {note to self: make sure to add a full tech stack explaining how you built your project}
 
-What can I make in this?
--  A game where a person is falling down between a cavern, and the user has to somehow help them hold on for dear life? something like that game where the guy was in a pot and used a sledge hammer to move up (sounds very generic)
-- Pumpkin carver: basically the user has to carve a pumpkin, add a export functionality so that they can share whatever abominations they'll probably make
-- CEO Downfall simulator: the user is a ceo, and they gotta make sure that they get a downfall, even though their luck is insanely good
-- Card stacking thingy: gotta stack the cards, in a tower like format
-- Fireworks: the user is a firework rocket, they gotta maneouver themselves to avoid peeps standing on the ground, the rocket is technically falling?
+## A bit about this game
 
-option I'ma go for:
-user gotta make a rocket with the correct amount of powder and stuff and launch it at a specific angle, the farther they go the better
+Basically, the user will be a rocket maker. They gotta make a firework rocket with the perfect combination of powder and size and such. The farther/higher up they go the more points they get. Will need to add a scoreboard or something
+
+## Things I wanna have:
+- Rocket firework physics
+    - Will probably have to use an external library for this
+- degree calulator, to measure at what degree the user is pushing the rocket off at
+- Some kinda way to measure what would be a good mix of nitroglycerin or gunpowder and such, can't make it too boring now can we?
+- Scoreboard
+- 3 trillion billion ice cream chips worth of bottles
