@@ -15,3 +15,13 @@ body, html {
     z-index: 10;
     user-select: none;
 }
+
+#bg {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
