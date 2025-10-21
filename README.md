@@ -4,7 +4,7 @@
 
 ## A bit about this game
 
-Basically, the user will be a rocket maker. They gotta make a firework rocket with the perfect combination of powder and size and such. The farther/higher up they go the more points they get. Will need to add a scoreboard or something
+Basically, the user will be the ISS controller, they gotta control stuff on the ISS. Will need to make a branching tree or something for choices and all. I'll make it up as we go
 
 ## Things I wanna have:
 - update this tmrow
