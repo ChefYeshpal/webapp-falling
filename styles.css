@@ -1,16 +1,17 @@
 body, html {
-    margin: 0;
+    margin: 0; 
     padding: 0;
     overflow: hidden;
-    height: 100%;
-    background-color: #87cefa;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-color: black;
+    font-family: Arial, sans-serif;
+    color: #eee;
 }
 
-#gameCanvas {
-    display: block;
-    background-color: #87cefa;
-    border: 1px solid #333;
+#info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 14px;
+    z-index: 10;
+    user-select: none;
 }
