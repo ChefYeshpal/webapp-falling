@@ -216,6 +216,89 @@ window.increaseSpeed = function(factor) {
   console.log('Simulation speed set to', factor, 'x');
 }
 
+// altitude bar
+function ensureHUD() {
+  if (document.getElementById('altitudeHud')) return;
+  const hud = document.createElement('div');
+  hud.id = 'altitudeHud';
+  hud.style.position = 'fixed';
+  hud.style.right = '18px';
+  hud.style.bottom = '10px';
+  hud.style.width = '36px';
+  hud.style.height = '50vh';
+  hud.style.display = 'flex';
+  hud.style.alignItems = 'flex-end';
+  hud.style.justifyContent = 'center';
+  hud.style.zIndex = '9998';
+
+  const bar = document.createElement('div');
+  bar.style.position = 'relative';
+  bar.style.width = '18px';
+  bar.style.height = '100%';
+  bar.style.borderRadius = '9px';
+  bar.style.overflow = 'hidden';
+  bar.style.backdropFilter = 'blur(4px)';
+  bar.style.background = 'linear-gradient(to top, rgba(80,150,240,0.35) 0%, rgba(120,200,120,0.28) 50%, rgba(240,160,160,0.28) 100%)';
+  bar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.4)';
+  bar.style.border = '1px solid rgba(200,200,200,0.25)';
+
+  const pointer = document.createElement('div');
+  pointer.id = 'hudPointer';
+  pointer.style.position = 'absolute';
+  pointer.style.left = '-0px';
+  pointer.style.width = '0';
+  pointer.style.height = '0';
+  pointer.style.borderTop = '8px solid transparent';
+  pointer.style.borderBottom = '8px solid transparent';
+  pointer.style.borderRight = '10px solid rgba(255,255,255,0.95)';
+  pointer.style.filter = 'drop-shadow(0 1px 2px rgba(0,0,0,0.6))';
+  pointer.style.transform = 'translateY(-50%)';
+  
+  const label = document.createElement('div');
+  label.id = 'hudLabel';
+  label.style.position = 'absolute';
+  label.style.top = '-28px';
+  label.style.left = '-10px';
+  label.style.width = '64px';
+  label.style.color = 'rgba(255,255,255,0.95)';
+  label.style.fontSize = '12px';
+  label.style.textAlign = 'left';
+  label.style.pointerEvents = 'none';
+
+  bar.appendChild(pointer);
+  hud.appendChild(bar);
+  hud.appendChild(label);
+  document.body.appendChild(hud);
+}
+
+function updateHUD(distance) {
+  ensureHUD();
+  const hud = document.getElementById('altitudeHud');
+  const bar = hud.querySelector('div');
+  const pointer = document.getElementById('hudPointer');
+  const label = document.getElementById('hudLabel');
+  const altitude = Math.max(0, distance - earthRadius);
+  const initAlt = Math.max(0.0001, earthToISSDistance - earthRadius);
+  // so that initial alt maps at middle of HUD
+  const maxAlt = Math.max(initAlt * 2, initAlt + 0.1);
+  const clampedAlt = Math.max(0, Math.min(maxAlt, altitude));
+  const norm = clampedAlt / maxAlt; // 0..1 (0=surface/top, 1=far/bottom)
+
+
+  const barRect = bar.getBoundingClientRect();
+  if (barRect.height > 0) {
+    const topPx = norm * barRect.height;
+    const ptr = pointer;
+    if (!ptr.style.transition) ptr.style.transition = 'top 0.12s linear';
+    ptr.style.top = `${topPx}px`;
+  }
+
+  
+  label.innerText = `${altitude.toFixed(2)} u`;
+}
+
+ensureHUD();
+
 // camera and stuff
 camera.position.set(0, 1, 15);
 camera.lookAt(iss.position);
@@ -253,6 +336,8 @@ function animate(){
     const dir = new THREE.Vector3().subVectors(earth.position, iss.position).normalize();
     iss.position.addScaledVector(dir, fallRate * dt);
   }
+
+  updateHUD(issToEarth);
 
   // check for atmosphere entry
     if (!burnStarted && issToEarth <= atmosphereRadius + 0.02) {
