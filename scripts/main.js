@@ -96,6 +96,24 @@ function createISS() {
   module2.position.x = 0.25;
   issGroup.add(module2);
 
+  const endSphereGeo = new THREE.SphereGeometry(0.045, 12, 12);
+  const endSphereMaterial = moduleMaterial;
+  const moduleHalf = 0.35 /2;
+
+  const m1Inner = new THREE.Mesh(endSphereGeo, endSphereMaterial);
+  m1Inner.position.set(module1.position.x + moduleHalf *0.95, 0, 0);
+  issGroup.add(m1Inner);
+  const m1Outer = new THREE.Mesh(endSphereGeo, endSphereMaterial);
+  m1Outer.position.set(module1.position.x - moduleHalf * 0.95, 0, 0);
+  issGroup.add(m1Outer);
+
+  const m2Inner = new THREE.Mesh(endSphereGeo, endSphereMaterial);
+  m2Inner.position.set(module2.position.x - moduleHalf * 0.95, 0, 0);
+  issGroup.add(m2Inner);
+  const m2Outer = new THREE.Mesh(endSphereGeo, endSphereMaterial);
+  m2Outer.position.set(module2.position.x + moduleHalf * 0.95, 0, 0);
+  issGroup.add(m2Outer);
+
   // Solar panel
   const panelGeometry = new THREE.BoxGeometry(0.6, 0.01, 0.25);
   
