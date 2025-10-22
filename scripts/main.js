@@ -58,16 +58,75 @@ const ambientLight = new THREE.AmbientLight(0x404060, 0.3);
 scene.add(ambientLight);
 
 // ISS
-const issRadius = 0.15;
-const issGeometry = new THREE.SphereGeometry(issRadius, 16, 16);
-const issMaterial = new THREE.MeshStandardMaterial({ 
-  color: 0xffffff, 
-  emissive: 0xcccccc,
-  emissiveIntensity: 0.3,
-  metalness: 0.7, 
-  roughness: 0.3 
-});
-const iss = new THREE.Mesh(issGeometry, issMaterial);
+function createISS() {
+  const issGroup = new THREE.Group();
+  
+  const moduleMaterial = new THREE.MeshStandardMaterial({
+    color: 0xe0e0e0,
+    metalness: 0.6,
+    roughness: 0.4
+  });
+
+  const solarPanelMaterial = new THREE.MeshStandardMaterial({
+    color: 0x1a3a6b,
+    metalness: 0.8,
+    roughness: 0.2,
+    emissive: 0x0a1a3b,
+    emissiveIntensity: 0.3
+  });
+
+  // Central truss (main spine)
+  const trussGeometry = new THREE.CylinderGeometry(0.03, 0.03, 1.2, 8);
+  const truss = new THREE.Mesh(trussGeometry, moduleMaterial);
+  truss.rotation.z = Math.PI / 2;
+  issGroup.add(truss);
+
+  const panelTilt = 0.25;
+
+  // Main modules
+  const moduleGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.35, 16);
+  
+  const module1 = new THREE.Mesh(moduleGeometry, moduleMaterial);
+  module1.rotation.z = Math.PI / 2;
+  module1.position.x = -0.25;
+  issGroup.add(module1);
+
+  const module2 = new THREE.Mesh(moduleGeometry, moduleMaterial);
+  module2.rotation.z = Math.PI / 2;
+  module2.position.x = 0.25;
+  issGroup.add(module2);
+
+  // Solar panel
+  const panelGeometry = new THREE.BoxGeometry(0.6, 0.01, 0.25);
+  
+  const leftPanel1 = new THREE.Mesh(panelGeometry, solarPanelMaterial);
+  leftPanel1.position.set(-0.5, 0.35, 0);
+  leftPanel1.rotation.z = Math.PI / 2;
+  leftPanel1.rotateOnAxis(new THREE.Vector3(1, 0, 0), panelTilt);
+  issGroup.add(leftPanel1);
+  
+  const leftPanel2 = new THREE.Mesh(panelGeometry, solarPanelMaterial);
+  leftPanel2.position.set(-0.5, -0.35, 0);
+  leftPanel2.rotation.z = -Math.PI / 2;
+  leftPanel2.rotateOnAxis(new THREE.Vector3(1, 0, 0), panelTilt);
+  issGroup.add(leftPanel2);
+
+  const rightPanel1 = new THREE.Mesh(panelGeometry, solarPanelMaterial);
+  rightPanel1.position.set(0.5, 0.35, 0);
+  rightPanel1.rotation.z = Math.PI / 2;
+  rightPanel1.rotateOnAxis(new THREE.Vector3(1, 0, 0), panelTilt);
+  issGroup.add(rightPanel1);
+  
+  const rightPanel2 = new THREE.Mesh(panelGeometry, solarPanelMaterial);
+  rightPanel2.position.set(0.5, -0.35, 0);
+  rightPanel2.rotation.z = -Math.PI / 2;
+  rightPanel2.rotateOnAxis(new THREE.Vector3(1, 0, 0), panelTilt);
+  issGroup.add(rightPanel2);
+
+  return issGroup;
+}
+
+const iss = createISS();
 scene.add(iss);
 
 
