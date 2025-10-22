@@ -77,10 +77,11 @@ scene.add(ambientLight);
 function createISS() {
   const issGroup = new THREE.Group();
   
-  const moduleMaterial = new THREE.MeshStandardMaterial({
-    color: 0xe0e0e0,
-    metalness: 0.6,
-    roughness: 0.4
+    const moduleMaterial = new THREE.MeshStandardMaterial({
+      color: 0xBABABA,
+    metalness: 0.18,
+    roughness: 0.65,
+    envMapIntensity: 0.4
   });
 
   const solarPanelMaterial = new THREE.MeshStandardMaterial({
@@ -163,6 +164,16 @@ function createISS() {
 const iss = createISS();
 scene.add(iss);
 
+iss.rotation.x = -0.22;
+iss.rotation.y = 0.32;
+
+// console twerker for rotation, probs will never use this
+window.setISSRotation = function(x, y, z) {
+  if (typeof x === 'number') iss.rotation.x = x;
+  if (typeof y === 'number') iss.rotation.y = y;
+  if (typeof z === 'number') iss.rotation.z = z;
+  console.log('ISS rotation set to', iss.rotation);
+}
 
 const earthToISSDistance = 3.6;
 const earthRotationSpeed = 0.05; 
