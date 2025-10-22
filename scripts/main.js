@@ -41,15 +41,29 @@ const earthMaterial = new THREE.MeshPhongMaterial({
 const earth = new THREE.Mesh(earthGeometry, earthMaterial);
 scene.add(earth);
 
-const atmosphereGeometry = new THREE.SphereGeometry(earthRadius * 1.08, 64, 64);
-const atmosphereMaterial = new THREE.MeshBasicMaterial({
-  color: 0x6699ff,
-  transparent: true,
-  opacity: 0.15,
-  blending: THREE.AdditiveBlending,
-  side: THREE.BackSide,
-});
-const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+
+const atmosphere = new THREE.Group();
+const atmosphereColor = 0x6699ff;
+const atmosphereLayers = [
+  { scale: 1.05, opacity: 0.12 },
+  { scale: 1.10, opacity: 0.08 },
+  { scale: 1.15, opacity: 0.04 }
+];
+for (let i = 0; i < atmosphereLayers.length; i++) {
+  const layer = atmosphereLayers[i];
+  const geo = new THREE.SphereGeometry(earthRadius * layer.scale, 64, 64);
+  const mat = new THREE.MeshBasicMaterial({
+    color: atmosphereColor,
+    transparent: true,
+    opacity: layer.opacity,
+    blending: THREE.AdditiveBlending,
+    side: THREE.BackSide,
+    depthWrite: false
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.renderOrder = 10 + i;
+  atmosphere.add(mesh);
+}
 scene.add(atmosphere);
 
 const sunlight = new THREE.DirectionalLight(0xffffff, 1.2);
@@ -150,7 +164,7 @@ const iss = createISS();
 scene.add(iss);
 
 
-const earthToISSDistance = 4.2;
+const earthToISSDistance = 3.6;
 const earthRotationSpeed = 0.05; 
 earth.position.set(0, 0, 0); 
 iss.position.set(0, 0, earthToISSDistance); 
