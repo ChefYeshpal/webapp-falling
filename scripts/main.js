@@ -1,3 +1,5 @@
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js';
+
 const canvas = document.getElementById('bg');
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
@@ -150,10 +152,55 @@ scene.add(iss);
 
 const earthToISSDistance = 4.2;
 const earthRotationSpeed = 0.05; 
-
-
 earth.position.set(0, 0, 0); 
 iss.position.set(0, 0, earthToISSDistance); 
+
+// Simulation control variables
+let timeScale = 1; 
+let fallRate = 0.005;
+const atmosphereRadius = earthRadius * 1.08;
+let burnStarted = false;
+let burnTimer = 0;
+const burnDuration = 15.0; 
+let gameOver = false;
+
+function ensureGameOverOverlay() {
+  let el = document.getElementById('gameOverOverlay');
+  if (el) return el;
+  el = document.createElement('div');
+  el.id = 'gameOverOverlay';
+  el.style.position = 'fixed';
+  el.style.top = '0';
+  el.style.left = '0';
+  el.style.width = '100vw';
+  el.style.height = '100vh';
+  el.style.display = 'none';
+  el.style.alignItems = 'center';
+  el.style.justifyContent = 'center';
+  el.style.background = 'rgba(0,0,0,0.85)';
+  el.style.color = '#fff';
+  el.style.fontSize = '64px';
+  el.style.fontFamily = 'Arial, sans-serif';
+  el.style.zIndex = '9999';
+  el.style.textAlign = 'center';
+  el.innerText = 'GAME OVER';
+  el.style.pointerEvents = 'none';
+  el.style.display = 'flex';
+  el.style.flexDirection = 'column';
+  el.style.gap = '10px';
+  el.style.visibility = 'hidden';
+  document.body.appendChild(el);
+  return el;
+}
+
+window.increaseSpeed = function(factor) {
+  if (typeof factor !== 'number' || factor <= 0) {
+    console.warn('increaseSpeed expects a positive number.');
+    return;
+  }
+  timeScale = factor;
+  console.log('Simulation speed set to', factor, 'x');
+}
 
 // camera and stuff
 camera.position.set(0, 1, 15);
@@ -168,13 +215,60 @@ window.addEventListener('resize', () => {
 const clock = new THREE.Clock();
 
 function animate(){
+  if (gameOver) return; // stop the loop when game over
   requestAnimationFrame(animate);
 
-  const elapsed = clock.getElapsedTime();
+  const dt = clock.getDelta() * timeScale; // scaled delta time
+  const elapsed = clock.getElapsedTime() * timeScale;
 
-  // Only rotate Earth on its axis
-  earth.rotation.y = elapsed * earthRotationSpeed;
+  // Rotate Earth on its axis (use elapsed for smooth slow rotation)
+  earth.rotation.y += earthRotationSpeed * dt;
   atmosphere.rotation.y = earth.rotation.y;
+
+  // If burn already finished, show overlay and stop
+  if (burnStarted && burnTimer >= burnDuration) {
+    const overlay = ensureGameOverOverlay();
+    overlay.style.visibility = 'visible';
+    gameOver = true;
+    console.log('Game over');
+    return;
+  }
+
+  // Move ISS slowly downward (toward Earth center) to simulate decay
+  const issToEarth = iss.position.distanceTo(earth.position);
+  if (!burnStarted) {
+    // move inward along current vector from earth to iss
+    const dir = new THREE.Vector3().subVectors(earth.position, iss.position).normalize();
+    iss.position.addScaledVector(dir, fallRate * dt);
+  }
+
+  // check for atmosphere entry
+  if (!burnStarted && issToEarth <= atmosphereRadius + 0.05) {
+    burnStarted = true;
+    burnTimer = 0;
+    console.log('Burn started');
+  }
+
+  // if burning, update visual effect and increment timer
+  if (burnStarted) {
+    burnTimer += dt;
+    // simple burn: pulse emissive intensity on modules and panels
+    const t = Math.sin(burnTimer * 10) * 0.5 + 0.5; // 0..1 pulse
+    iss.traverse((child) => {
+      if (child.isMesh) {
+        if (!child.userData._origEmissive) child.userData._origEmissive = child.material.emissive ? child.material.emissive.clone() : new THREE.Color(0x000000);
+        if (child.material.emissive) {
+          child.material.emissive.r = Math.min(1, child.userData._origEmissive.r + t * 0.8);
+          child.material.emissive.g = Math.min(0.5, child.userData._origEmissive.g + t * 0.4);
+          child.material.emissive.b = Math.min(0.2, child.userData._origEmissive.b + t * 0.2);
+        }
+        // slight scaling to look like overheating
+        child.scale.x = 1 + t * 0.02;
+        child.scale.y = 1 + t * 0.02;
+        child.scale.z = 1 + t * 0.02;
+      }
+    });
+  }
 
   renderer.render(scene, camera);
 }
