@@ -19,3 +19,7 @@ Basically, the user will be the ISS controller, they gotta control stuff on the 
     - Created camera and set up the basic scene for the ISS and earth view
     - Used NASA image of earth as wrapper
     - ISS is just a blob for now
+- 22 Oct 2025
+    - Created a little more detailed ISS, not a blob anymore
+        - Has solar panels and different modules (2)
+        - Will probably change it if needed in the future
