@@ -156,12 +156,12 @@ earth.position.set(0, 0, 0);
 iss.position.set(0, 0, earthToISSDistance); 
 
 // Simulation control variables
-let timeScale = 1; 
+let timeScale = 1;
 let fallRate = 0.005;
-const atmosphereRadius = earthRadius * 1.08;
+const atmosphereRadius = earthRadius * 1.0001;
 let burnStarted = false;
 let burnTimer = 0;
-const burnDuration = 15.0; 
+const burnDuration = 120.0
 let gameOver = false;
 
 function ensureGameOverOverlay() {
@@ -177,7 +177,7 @@ function ensureGameOverOverlay() {
   el.style.display = 'none';
   el.style.alignItems = 'center';
   el.style.justifyContent = 'center';
-  el.style.background = 'rgba(0,0,0,0.85)';
+  el.style.background = 'rgba(0,0,0,0.50)';
   el.style.color = '#fff';
   el.style.fontSize = '64px';
   el.style.fontFamily = 'Arial, sans-serif';
@@ -215,17 +215,16 @@ window.addEventListener('resize', () => {
 const clock = new THREE.Clock();
 
 function animate(){
-  if (gameOver) return; // stop the loop when game over
+  if (gameOver) return;
   requestAnimationFrame(animate);
 
-  const dt = clock.getDelta() * timeScale; // scaled delta time
+  const dt = clock.getDelta() * timeScale;
   const elapsed = clock.getElapsedTime() * timeScale;
 
-  // Rotate Earth on its axis (use elapsed for smooth slow rotation)
+  // Rotate Earth on its axis
   earth.rotation.y += earthRotationSpeed * dt;
   atmosphere.rotation.y = earth.rotation.y;
 
-  // If burn already finished, show overlay and stop
   if (burnStarted && burnTimer >= burnDuration) {
     const overlay = ensureGameOverOverlay();
     overlay.style.visibility = 'visible';
@@ -234,38 +233,49 @@ function animate(){
     return;
   }
 
-  // Move ISS slowly downward (toward Earth center) to simulate decay
+  // Move ISS downward
   const issToEarth = iss.position.distanceTo(earth.position);
   if (!burnStarted) {
-    // move inward along current vector from earth to iss
     const dir = new THREE.Vector3().subVectors(earth.position, iss.position).normalize();
     iss.position.addScaledVector(dir, fallRate * dt);
   }
 
   // check for atmosphere entry
-  if (!burnStarted && issToEarth <= atmosphereRadius + 0.05) {
+    if (!burnStarted && issToEarth <= atmosphereRadius + 0.02) {
     burnStarted = true;
     burnTimer = 0;
     console.log('Burn started');
   }
 
-  // if burning, update visual effect and increment timer
   if (burnStarted) {
     burnTimer += dt;
-    // simple burn: pulse emissive intensity on modules and panels
-    const t = Math.sin(burnTimer * 10) * 0.5 + 0.5; // 0..1 pulse
+    const progress = Math.min(1, burnTimer / burnDuration); // 0..1
+
+    const target = new THREE.Color(1.0, 0.35, 0.05);
+
     iss.traverse((child) => {
       if (child.isMesh) {
         if (!child.userData._origEmissive) child.userData._origEmissive = child.material.emissive ? child.material.emissive.clone() : new THREE.Color(0x000000);
+        if (!child.userData._origColor) child.userData._origColor = child.material.color ? child.material.color.clone() : new THREE.Color(0xffffff);
+
         if (child.material.emissive) {
-          child.material.emissive.r = Math.min(1, child.userData._origEmissive.r + t * 0.8);
-          child.material.emissive.g = Math.min(0.5, child.userData._origEmissive.g + t * 0.4);
-          child.material.emissive.b = Math.min(0.2, child.userData._origEmissive.b + t * 0.2);
+          child.material.emissive.r = child.userData._origEmissive.r + (target.r - child.userData._origEmissive.r) * progress;
+          child.material.emissive.g = child.userData._origEmissive.g + (target.g - child.userData._origEmissive.g) * progress;
+          child.material.emissive.b = child.userData._origEmissive.b + (target.b - child.userData._origEmissive.b) * progress;
         }
-        // slight scaling to look like overheating
-        child.scale.x = 1 + t * 0.02;
-        child.scale.y = 1 + t * 0.02;
-        child.scale.z = 1 + t * 0.02;
+
+        if (child.material.color) {
+          child.material.color.r = child.userData._origColor.r * (1 - 0.15 * progress) + target.r * 0.15 * progress;
+          child.material.color.g = child.userData._origColor.g * (1 - 0.10 * progress) + target.g * 0.10 * progress;
+          child.material.color.b = child.userData._origColor.b * (1 - 0.05 * progress) + target.b * 0.05 * progress;
+        }
+
+        if (child.material.emissiveIntensity !== undefined) child.material.emissiveIntensity = 0.3 + progress * 1.2;
+
+        const scaleFactor = 1 + progress * 0.06;
+        child.scale.x = scaleFactor;
+        child.scale.y = scaleFactor;
+        child.scale.z = scaleFactor;
       }
     });
   }
