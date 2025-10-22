@@ -21,7 +21,11 @@ Basically, the user will be the ISS controller, they gotta control stuff on the 
     * ISS is just a blob for now
 * 22 Oct 2025
     * Created a little more detailed ISS, not a blob anymore
-        * Has solar panels and different modules (2)
+        * Has solar panels (4) and different modules (2)
         * Will probably change it if needed in the future
     * ISS will slowly fall downwards, and burn up in the atmosphere
     * Added a "ring" like atmosphere, will search up how to have it be a gradient or something instead considering it looks rather un-natural
+    * Added a HUD kinda bar, should basicallly show the distance from earth to ISS
+        * Green is perfect distance
+        * Red is too close to earth, burn up
+        * Blue is too far from earth, freeze up
