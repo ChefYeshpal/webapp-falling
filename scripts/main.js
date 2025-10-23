@@ -164,8 +164,8 @@ function createISS() {
 const iss = createISS();
 scene.add(iss);
 
-iss.rotation.x = -0.22;
-iss.rotation.y = 0.32;
+iss.rotation.x = 0.22;
+iss.rotation.y = 0.5;
 
 // console twerker for rotation, probs will never use this
 window.setISSRotation = function(x, y, z) {
@@ -176,7 +176,7 @@ window.setISSRotation = function(x, y, z) {
 }
 
 const earthToISSDistance = 3.6;
-const earthRotationSpeed = 0.05; 
+const earthRotationSpeed = 0.01; 
 earth.position.set(0, 0, 0); 
 iss.position.set(0, 0, earthToISSDistance); 
 
