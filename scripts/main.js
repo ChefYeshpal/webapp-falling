@@ -175,7 +175,7 @@ window.setISSRotation = function(x, y, z) {
   console.log('ISS rotation set to', iss.rotation);
 }
 
-const earthToISSDistance = 3.6;
+const earthToISSDistance = 4;
 const earthRotationSpeed = 0.01; 
 earth.position.set(0, 0, 0); 
 iss.position.set(0, 0, earthToISSDistance); 
