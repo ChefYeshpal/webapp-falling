@@ -28,7 +28,13 @@ function createStarField() {
 scene.add(createStarField());
 
 // earth
-const earthRadius = 3;
+// scale: 1 scene unit = 1000 km
+
+// just adding this so I remember this shii later
+// Earth mean radius ~ 6371 km =  6.371 units
+// ISS average altitude ~ 408 km = 0.408 units
+const UNIT_KM = 1000.0;
+const earthRadius = 6.371;
 const earthGeometry = new THREE.SphereGeometry(earthRadius, 64, 64);
 
 const textureLoader = new THREE.TextureLoader();
@@ -167,6 +173,40 @@ scene.add(iss);
 iss.rotation.x = 0.22;
 iss.rotation.y = 0.5;
 
+// Real ISS length ~108.5 meters
+// 1 unit = 1000 km = 1,000,000 meters, so 108.5 m = 108.5 / 1e6 units
+const REAL_ISS_LENGTH_M = 108.5;
+const realIssLengthUnits = REAL_ISS_LENGTH_M / 1e6;
+
+// Measure current model size and compute scale factor
+const issBox = new THREE.Box3().setFromObject(iss);
+const issSize = new THREE.Vector3();
+issBox.getSize(issSize);
+const modelMaxDim = Math.max(issSize.x, issSize.y, issSize.z) || 1.0;
+const scaleToReal = realIssLengthUnits / modelMaxDim;
+
+
+const ISS_VISUAL_SCALE = 2000;
+let targetScale = scaleToReal * ISS_VISUAL_SCALE;
+
+const ISS_ALTITUDE_KM = 408;
+const issAltitude = ISS_ALTITUDE_KM / UNIT_KM;
+const earthToISSDistance = earthRadius + issAltitude;
+
+const issSphere = new THREE.Sphere();
+issBox.getBoundingSphere(issSphere);
+const modelRadius = issSphere.radius || (modelMaxDim * 0.5);
+const minGap = 0.01;
+const maxAllowedRadius = Math.max(0, issAltitude - minGap);
+if (modelRadius * targetScale > maxAllowedRadius) {
+  targetScale = maxAllowedRadius / (modelRadius || 1);
+}
+
+iss.scale.setScalar(targetScale);
+
+// print ISS and camera placement in console
+console.log('ISS scale:', iss.scale.x, 'ISS position (pre-placement):', iss.position.clone());
+
 // console twerker for rotation, probs will never use this
 window.setISSRotation = function(x, y, z) {
   if (typeof x === 'number') iss.rotation.x = x;
@@ -175,15 +215,15 @@ window.setISSRotation = function(x, y, z) {
   console.log('ISS rotation set to', iss.rotation);
 }
 
-const earthToISSDistance = 4;
 const earthRotationSpeed = 0.01; 
 earth.position.set(0, 0, 0); 
 iss.position.set(0, 0, earthToISSDistance); 
 
-// Simulation control variables
+// sim control variables
 let timeScale = 1;
 let fallRate = 0.005;
-const atmosphereRadius = earthRadius * 1.0001;
+const ATMOSPHERE_THICKNESS_KM = 100;
+const atmosphereRadius = earthRadius + (ATMOSPHERE_THICKNESS_KM / UNIT_KM);
 let burnStarted = false;
 let burnTimer = 0;
 const burnDuration = 120.0
@@ -311,8 +351,32 @@ function updateHUD(distance) {
 ensureHUD();
 
 // camera and stuff
+const ORIGINAL_EARTH_TO_ISS = 4;
 camera.position.set(0, 1, 15);
+const origIssPos = new THREE.Vector3(0, 0, ORIGINAL_EARTH_TO_ISS);
+const originalCameraToIssDist = camera.position.distanceTo(origIssPos);
+const newIssPos = new THREE.Vector3().copy(iss.position);
+
+const dirFromIssToCamera = new THREE.Vector3().subVectors(camera.position, newIssPos);
+if (dirFromIssToCamera.lengthSq() === 0) {
+  // fallback: place camera along +z if somehow coincident
+  dirFromIssToCamera.set(0, 1, 1);
+}
+dirFromIssToCamera.normalize();
+const CAMERA_ZOOM_FACTOR = 0.8; // (higher = closer)
+
+let intendedCameraDist = originalCameraToIssDist * (1 - CAMERA_ZOOM_FACTOR);
+
+// clamp so camera dont go inside ISS bounding sphere
+const issBoundingSphere = new THREE.Sphere();
+new THREE.Box3().setFromObject(iss).getBoundingSphere(issBoundingSphere);
+const issRadiusWorld = issBoundingSphere.radius * iss.scale.x;
+const cameraMinDist = issRadiusWorld + 0.2;
+if (intendedCameraDist < cameraMinDist) intendedCameraDist = cameraMinDist;
+
+camera.position.copy(newIssPos).addScaledVector(dirFromIssToCamera, intendedCameraDist);
 camera.lookAt(iss.position);
+console.log('Camera positioned at', camera.position.clone(), 'distance to ISS', camera.position.distanceTo(iss.position));
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth/window.innerHeight;
@@ -341,7 +405,7 @@ function animate(){
     return;
   }
 
-  // Move ISS downward
+  // Move ISS downward (falling)
   const issToEarth = iss.position.distanceTo(earth.position);
   if (!burnStarted) {
     const dir = new THREE.Vector3().subVectors(earth.position, iss.position).normalize();
@@ -350,7 +414,7 @@ function animate(){
 
   updateHUD(issToEarth);
 
-  // check for atmosphere entry
+  // atmosphere entry status
     if (!burnStarted && issToEarth <= atmosphereRadius + 0.02) {
     burnStarted = true;
     burnTimer = 0;
