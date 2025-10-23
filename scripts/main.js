@@ -216,8 +216,20 @@ window.setISSRotation = function(x, y, z) {
 }
 
 const earthRotationSpeed = 0.01; 
-earth.position.set(0, 0, 0); 
-iss.position.set(0, 0, earthToISSDistance); 
+earth.position.set(0, 0, 0);
+// tilt ISS orbit
+const ISS_INCLINATION_DEG = 15.0; 
+const ISS_RAAN_DEG = 0; 
+const incRad = THREE.MathUtils.degToRad(ISS_INCLINATION_DEG);
+const raanRad = THREE.MathUtils.degToRad(ISS_RAAN_DEG);
+// longitude=0 in orbital plane
+const tiltedPos = new THREE.Vector3(
+  0,
+  earthToISSDistance * Math.sin(incRad),
+  earthToISSDistance * Math.cos(incRad)
+);
+tiltedPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), raanRad);
+iss.position.copy(tiltedPos);
 
 // sim control variables
 let timeScale = 1;
@@ -378,6 +390,9 @@ camera.position.copy(newIssPos).addScaledVector(dirFromIssToCamera, intendedCame
 camera.lookAt(iss.position);
 console.log('Camera positioned at', camera.position.clone(), 'distance to ISS', camera.position.distanceTo(iss.position));
 
+// camera offset
+const cameraOffsetFromISS = new THREE.Vector3().subVectors(camera.position, iss.position);
+
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
@@ -411,6 +426,9 @@ function animate(){
     const dir = new THREE.Vector3().subVectors(earth.position, iss.position).normalize();
     iss.position.addScaledVector(dir, fallRate * dt);
   }
+
+  camera.position.copy(iss.position).add(cameraOffsetFromISS);
+  camera.lookAt(iss.position);
 
   updateHUD(issToEarth);
 
