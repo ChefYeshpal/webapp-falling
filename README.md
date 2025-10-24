@@ -31,4 +31,8 @@ Basically, the user will be the ISS controller, they gotta control stuff on the 
         * Blue is too far from earth, freeze up
     * Rotated ISS a bit
 * 23 Oct 2025
-    *
+    * Changed scale of ISS and earth
+        * Should look more realistic now
+    * Made it so that the camera placement is always a specific distance from ISS
+    * Added a terminal "console" thingy
+    * Added path mechanics (really basic fr)
