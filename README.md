@@ -36,3 +36,4 @@ Basically, the user will be the ISS controller, they gotta control stuff on the 
     * Made it so that the camera placement is always a specific distance from ISS
     * Added a terminal "console" thingy
     * Added path mechanics (really basic fr)
+* 24 Oct 2025
