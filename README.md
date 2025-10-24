@@ -37,3 +37,6 @@ Basically, the user will be the ISS controller, they gotta control stuff on the 
     * Added a terminal "console" thingy
     * Added path mechanics (really basic fr)
 * 24 Oct 2025
+    * Trying to add terminal bar
+        * not doing it, nope
+    *
