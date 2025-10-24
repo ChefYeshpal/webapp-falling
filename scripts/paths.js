@@ -127,6 +127,10 @@
             console.clearMessages();
             console.typeWords('press the space bar, to push the ISS farther from the earth', () => {
               console.setInputValue('press space bar');
+              // game controls
+              if (typeof window.startGame === 'function') {
+                window.startGame();
+              }
             });
           }, 800);
           return;

@@ -240,6 +240,23 @@ let burnStarted = false;
 let burnTimer = 0;
 const burnDuration = 120.0
 let gameOver = false;
+let gameActive = false;
+const boostStrength = 0.01;
+
+// Spacebar control
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && gameActive && !gameOver) {
+    e.preventDefault();
+    const dir = new THREE.Vector3().subVectors(iss.position, earth.position).normalize();
+    iss.position.addScaledVector(dir, boostStrength);
+  }
+});
+
+// Enable game controls (dont want them to figure it out too early hehe)
+window.startGame = function() {
+  gameActive = true;
+  console.log('Game controls activated');
+};
 
 function ensureGameOverOverlay() {
   let el = document.getElementById('gameOverOverlay');
