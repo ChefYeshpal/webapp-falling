@@ -2,7 +2,7 @@
   const WIDTH = 420;
   const HEIGHT = 140;
   const PADDING = 12;
-  const LOAD_DURATION = 3000;
+  const LOAD_DURATION = 5000;
   const TYPE_DELAY = 120;
 
   // styles
@@ -65,17 +65,12 @@
   container.setAttribute('aria-live', 'polite');
 
   container.innerHTML = `
-    <div class="top-row">
-      <div class="loader">connecting</div>
-      <div class="hint">terminal <--> Houston</div>
-    </div>
     <div class="message" aria-atomic="true"><span class="dots"></span><span class="cursor"> </span></div>
     <div class="input-row">
-      <input class="input-underline" type="text" readonly value="1. yes 2. dont reply" />
+      <input class="input-underline" type="text" readonly value="" />
     </div>
   `;
 
-  // Insert into DOM
   document.body.appendChild(container);
 
   const dotsEl = container.querySelector('.dots');
@@ -139,13 +134,11 @@
   }
 
   function handleConfirm() {
-    // Remove current listener
     if (currentKeyListener) {
       document.removeEventListener('keydown', currentKeyListener);
       currentKeyListener = null;
     }
 
-    // Call confirm callback
     if (confirmCallback) {
       confirmCallback();
     }
@@ -171,6 +164,43 @@
   window.fallingConsole.messageEl = messageEl;
   window.fallingConsole.inputEl = inputEl;
   window.fallingConsole.cursorEl = cursorEl;
+
+  window.fallingConsole.setHeader = function({ loader, hint } = {}) {
+    let topRow = container.querySelector('.top-row');
+  
+    if (!topRow) {
+      topRow = document.createElement('div');
+      topRow.className = 'top-row';
+      topRow.innerHTML = `
+        <div class="loader"></div>
+        <div class="hint"></div>
+      `;
+      container.insertBefore(topRow, container.firstChild);
+    }
+    
+    const loaderEl = topRow.querySelector('.loader');
+    const hintEl = topRow.querySelector('.hint');
+    
+    if (typeof loader !== 'undefined' && loaderEl) loaderEl.textContent = loader;
+    if (typeof hint !== 'undefined' && hintEl) hintEl.textContent = hint;
+  };
+
+  window.fallingConsole.getHeader = function() {
+    const topRow = container.querySelector('.top-row');
+    if (!topRow) return { loader: null, hint: null };
+    
+    const loaderEl = topRow.querySelector('.loader');
+    const hintEl = topRow.querySelector('.hint');
+    return {
+      loader: loaderEl ? loaderEl.textContent : null,
+      hint: hintEl ? hintEl.textContent : null
+    };
+  };
+
+  window.fallingConsole.removeHeader = function() {
+    const topRow = container.querySelector('.top-row');
+    if (topRow) topRow.remove();
+  };
   
   window.fallingConsole.onChoice = function(callback) {
     choiceCallback = callback;
@@ -244,7 +274,7 @@
     hints.forEach(h => h.remove());
   };
 
-  // Initial sequence: start loader, after LOAD_DURATION stop and type out message, then enable input
+  
   startLoading();
   setTimeout(() => {
     stopLoading();

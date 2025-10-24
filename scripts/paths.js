@@ -9,11 +9,13 @@
 
   waitForConsole(() => {
     const console = window.fallingConsole;
+    console.setHeader({ 
+      loader: 'connecting', 
+      hint: 'terminal <--> Houston' 
+    });
 
-    // Phase 1
+    // ==================== PHASE 1 ====================
     console.onInitialMessageComplete = function() {
-      const hintEl = console.container.querySelector('.top-row .hint');
-      if (hintEl) hintEl.textContent = 'terminal <-> Houston';
       
       console.setInputValue('1. yes 2. dont reply');
       console.enableInput('Press 1 or 2 to choose');
@@ -24,18 +26,21 @@
           console.setInputValue('press Enter to send');
           console.enableConfirmation('Press Enter to send');
 
-
           console.onConfirm(() => {
-
             console.clearMessages();
             console.showMessage('> Sent: yes');
             console.setInputValue('sent: yes');
-            
+
+            console.setHeader({ 
+              loader: 'connected', 
+              hint: 'terminal <--> Houston' 
+            });
 
             setTimeout(() => {
               startPhase2();
             }, 1000);
           });
+          
         } else if (choice === '2') {
           console.showMessage('> Send?: [no reply]');
           console.setInputValue('press Enter to confirm');
@@ -51,14 +56,12 @@
       });
     };
 
-    // Phase 2
+    // ==================== PHASE 2 ====================
     function startPhase2() {
       console.clearMessages();
-
+      
+      
       console.typeWords('good, connection seems optimal', () => {
-        const hintEl = console.container.querySelector('.top-row .hint');
-        if (hintEl) hintEl.textContent = 'terminal <-> Houston';
-        
         console.setInputValue('1. same here 2. connection is going haywire');
         console.enableInput('Press 1 or 2 to choose');
 
@@ -74,6 +77,7 @@
               console.setInputValue('sent: same here');
               
             });
+            
           } else if (choice === '2') {
             console.showMessage('> Send?: connection is going haywire');
             console.setInputValue('press Enter to send');
@@ -93,7 +97,5 @@
         });
       });
     }
-
-    // function startPhase3() { ... }
   });
 })();
