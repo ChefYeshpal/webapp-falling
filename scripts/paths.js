@@ -12,6 +12,9 @@
 
     // Phase 1
     console.onInitialMessageComplete = function() {
+      const hintEl = console.container.querySelector('.top-row .hint');
+      if (hintEl) hintEl.textContent = 'terminal <-> Houston';
+      
       console.setInputValue('1. yes 2. dont reply');
       console.enableInput('Press 1 or 2 to choose');
 
@@ -53,6 +56,9 @@
       console.clearMessages();
 
       console.typeWords('good, connection seems optimal', () => {
+        const hintEl = console.container.querySelector('.top-row .hint');
+        if (hintEl) hintEl.textContent = 'terminal <-> Houston';
+        
         console.setInputValue('1. same here 2. connection is going haywire');
         console.enableInput('Press 1 or 2 to choose');
 
@@ -67,7 +73,6 @@
               console.showMessage('> Sent: same here');
               console.setInputValue('sent: same here');
               
-              // TODO: Add phase 3 here
             });
           } else if (choice === '2') {
             console.showMessage('> Send?: connection is going haywire');

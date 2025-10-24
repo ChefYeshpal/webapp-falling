@@ -67,7 +67,7 @@
   container.innerHTML = `
     <div class="top-row">
       <div class="loader">connecting</div>
-      <div class="hint">terminal <-> Houston</div>
+      <div class="hint">terminal <--> Houston</div>
     </div>
     <div class="message" aria-atomic="true"><span class="dots"></span><span class="cursor"> </span></div>
     <div class="input-row">
@@ -201,7 +201,7 @@
     inputEl.focus?.();
     inputEl.setAttribute('readonly', 'true');
     
-    const oldPrompts = container.querySelectorAll('.hint');
+    const oldPrompts = container.querySelectorAll('.hint:not(.top-row .hint)');
     oldPrompts.forEach(p => p.remove());
     
     const prompt = document.createElement('div');
