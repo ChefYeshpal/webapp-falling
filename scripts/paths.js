@@ -76,6 +76,9 @@
               console.showMessage('> Sent: same here');
               console.setInputValue('sent: same here');
               
+              setTimeout(() => {
+                startPhase3();
+              }, 1200);
             });
             
           } else if (choice === '2') {
@@ -96,6 +99,52 @@
           }
         });
       });
+    }
+
+    // ==================== PHASE 3 ====================
+    function startPhase3() {
+      console.clearMessages();
+      
+      const tutorialLines = [
+        'alright, let me explain how this works',
+        'the ISS is in constant free fall',
+        'it is basically falling faster than the earth can rotate',
+        'so it forms a temporary orbit',
+        'to make sure that the ISS does not crash into the earth',
+        'you have to use fuel canisters to push the earth farther',
+        'if you look at the right corner',
+        'you will notice a vertical bar',
+        'red means too close to earth',
+        'blue means too far from earth',
+        'green is just the perfect distance'
+      ];
+
+      let currentLineIndex = 0;
+
+      function showNextLine() {
+        if (currentLineIndex >= tutorialLines.length) {
+          setTimeout(() => {
+            console.clearMessages();
+            console.typeWords('press the space bar, to push the ISS farther from the earth', () => {
+              console.setInputValue('press space bar');
+            });
+          }, 800);
+          return;
+        }
+
+        console.typeWords(tutorialLines[currentLineIndex], () => {
+          currentLineIndex++;
+          console.setInputValue('');
+          console.enableConfirmation('Press Enter to continue');
+
+          console.onConfirm(() => {
+            console.clearMessages();
+            showNextLine();
+          });
+        });
+      }
+
+      showNextLine();
     }
   });
 })();
