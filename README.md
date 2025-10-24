@@ -39,4 +39,4 @@ Basically, the user will be the ISS controller, they gotta control stuff on the 
 * 24 Oct 2025
     * Trying to add terminal bar
         * not doing it, nope
-    *
+    * Pressing space bar pushes ISS farther into the endless void of space
