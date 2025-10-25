@@ -35,7 +35,7 @@
 
       .falling-console .top-row { display:flex; gap:8px; align-items:center; }
       .falling-console .loader { color: #9fd; font-weight: 600; }
-      .falling-console .message { margin-top:6px; min-height:40px; }
+      .falling-console .message { margin-top:6px; min-height:40px; max-height:60px; overflow:hidden; }
       .falling-console .cursor { display:inline-block; width:10px; background:transparent; animation: blink 1s steps(2,start) infinite; }
 
       @keyframes blink { to { background: transparent; } from { background: #d6ffd6; } }
@@ -258,8 +258,13 @@
   window.fallingConsole.showMessage = function(text) {
     const msg = document.createElement('div');
     msg.style.marginTop = '6px';
+    msg.style.fontSize = '12px';
     msg.textContent = text;
     container.appendChild(msg);
+    const dynamicMessages = container.querySelectorAll('div:not(.top-row):not(.message):not(.input-row):not(.hint)');
+    if (dynamicMessages.length > 3) {
+      dynamicMessages[0].remove();
+    }
   };
 
   window.fallingConsole.setInputValue = function(value) {

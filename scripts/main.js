@@ -239,9 +239,21 @@ const atmosphereRadius = earthRadius + (ATMOSPHERE_THICKNESS_KM / UNIT_KM);
 let burnStarted = false;
 let burnTimer = 0;
 const burnDuration = 120.0
+let burnProgress = 0;
 let gameOver = false;
 let gameActive = false;
-const boostStrength = 0.01;
+let baseBoostStrength = 0.01;
+let boostStrength = baseBoostStrength;
+
+// frosty
+const freezeAltitudeThreshold = 0.70;
+let freezeProgress = 0;
+const freezeFillRate = 0.6;
+const freezeRecoverRate = 0.3;
+let freezeActive = false;
+const reviveAltitudeThreshold = 0.35;
+let frozeControlsLocked = false;
+const burnCoolRate = 0.8;
 
 // Spacebar control
 window.addEventListener('keydown', (e) => {
@@ -388,11 +400,10 @@ const newIssPos = new THREE.Vector3().copy(iss.position);
 
 const dirFromIssToCamera = new THREE.Vector3().subVectors(camera.position, newIssPos);
 if (dirFromIssToCamera.lengthSq() === 0) {
-  // fallback: place camera along +z if somehow coincident
   dirFromIssToCamera.set(0, 1, 1);
 }
 dirFromIssToCamera.normalize();
-const CAMERA_ZOOM_FACTOR = 0.8; // (higher = closer)
+const CAMERA_ZOOM_FACTOR = 0.8; // higher = closer
 
 let intendedCameraDist = originalCameraToIssDist * (1 - CAMERA_ZOOM_FACTOR);
 
@@ -402,6 +413,18 @@ new THREE.Box3().setFromObject(iss).getBoundingSphere(issBoundingSphere);
 const issRadiusWorld = issBoundingSphere.radius * iss.scale.x;
 const cameraMinDist = issRadiusWorld + 0.2;
 if (intendedCameraDist < cameraMinDist) intendedCameraDist = cameraMinDist;
+
+// elsa and frozone should be a couple, totes matching
+try {
+  const frostGeo = new THREE.SphereGeometry(Math.max(issRadiusWorld * 1.05, 0.01), 16, 12);
+  const frostMat = new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0 });
+  const frostShell = new THREE.Mesh(frostGeo, frostMat);
+  frostShell.name = 'frostShell';
+  iss.add(frostShell);
+  iss.userData.frostShell = frostShell;
+} catch (err) {
+  console.warn('Could not create frost shell:', err);
+}
 
 camera.position.copy(newIssPos).addScaledVector(dirFromIssToCamera, intendedCameraDist);
 camera.lookAt(iss.position);
@@ -437,9 +460,95 @@ function animate(){
     return;
   }
 
-  // Move ISS downward (falling)
+  // Move ISS downward aka falling, that's the theme if you didn't know
   const issToEarth = iss.position.distanceTo(earth.position);
-  if (!burnStarted) {
+
+  // freezing mechanic: check altitude
+  const altitude = Math.max(0, issToEarth - earthRadius);
+
+  const escapedAtmosphere = burnStarted && issToEarth > atmosphereRadius + 0.05;
+  if (escapedAtmosphere) {
+    burnProgress = Math.max(0, burnProgress - burnCoolRate * dt);
+    if (burnProgress <= 0.01) {
+      burnStarted = false;
+      burnTimer = 0;
+      burnProgress = 0;
+      console.log('Escaped atmosphere: burn cooled');
+    }
+  }
+  
+  if (altitude >= freezeAltitudeThreshold) {
+    freezeProgress = Math.min(1, freezeProgress + freezeFillRate * dt);
+    if (freezeProgress > 0.01 && !freezeActive) {
+      freezeActive = true;
+      try { window.fallingConsole && window.fallingConsole.showMessage('> Warning: thermal systems cooling'); } catch (e) {}
+    }
+  } else {
+    freezeProgress = Math.max(0, freezeProgress - freezeRecoverRate * dt);
+    if (freezeProgress <= 0 && freezeActive) {
+      freezeActive = false;
+      try { window.fallingConsole && window.fallingConsole.showMessage('> Thermal systems stabilizing'); } catch (e) {}
+    }
+  }
+
+  boostStrength = baseBoostStrength * (1 - freezeProgress);
+
+
+  const iceColor = new THREE.Color(0x66ccff);
+  const burnColor = new THREE.Color(1.0, 0.35, 0.05);
+  
+  iss.traverse((child) => {
+    if (child.isMesh) {
+      if (!child.userData._origEmissive) child.userData._origEmissive = child.material.emissive ? child.material.emissive.clone() : new THREE.Color(0x000000);
+      if (!child.userData._origColor) child.userData._origColor = child.material.color ? child.material.color.clone() : new THREE.Color(0xffffff);
+      const freezeWeight = freezeProgress * 0.9;
+      const burnWeight = burnProgress * 0.9;
+      const origWeight = Math.max(0, 1 - freezeWeight - burnWeight);
+
+      if (child.material.emissive) {
+        child.material.emissive.r = child.userData._origEmissive.r * origWeight + iceColor.r * freezeWeight + burnColor.r * burnWeight;
+        child.material.emissive.g = child.userData._origEmissive.g * origWeight + iceColor.g * freezeWeight + burnColor.g * burnWeight;
+        child.material.emissive.b = child.userData._origEmissive.b * origWeight + iceColor.b * freezeWeight + burnColor.b * burnWeight;
+      }
+
+      if (child.material.color) {
+        const colorBlend = freezeWeight * 0.25 + burnWeight * 0.15;
+        child.material.color.r = child.userData._origColor.r * (1 - colorBlend) + (iceColor.r * freezeWeight + burnColor.r * burnWeight) * 0.25;
+        child.material.color.g = child.userData._origColor.g * (1 - colorBlend) + (iceColor.g * freezeWeight + burnColor.g * burnWeight) * 0.25;
+        child.material.color.b = child.userData._origColor.b * (1 - colorBlend) + (iceColor.b * freezeWeight + burnColor.b * burnWeight) * 0.25;
+      }
+      
+      if (child.material.emissiveIntensity !== undefined) {
+        child.material.emissiveIntensity = 0.3 + burnProgress * 1.2;
+      }
+    
+      const scaleFactor = 1 + burnProgress * 0.06;
+      child.scale.x = scaleFactor;
+      child.scale.y = scaleFactor;
+      child.scale.z = scaleFactor;
+    }
+  });
+
+  if (iss.userData && iss.userData.frostShell && iss.userData.frostShell.material) {
+    iss.userData.frostShell.material.opacity = Math.min(0.75, freezeProgress * 0.7);
+  }
+  if (freezeProgress >= 0.995 && gameActive) {
+    gameActive = false;
+    frozeControlsLocked = true;
+    try { window.fallingConsole && window.fallingConsole.showMessage('> Systems frozen: controls locked'); } catch (e) {}
+  }
+
+
+  if (frozeControlsLocked && altitude <= reviveAltitudeThreshold) {
+    frozeControlsLocked = false;
+    freezeProgress = 0;
+    boostStrength = baseBoostStrength;
+    gameActive = true;
+    try { window.fallingConsole && window.fallingConsole.showMessage('> Systems restored: controls online'); } catch (e) {}
+  }
+  
+
+  if (!gameOver) {
     const dir = new THREE.Vector3().subVectors(earth.position, iss.position).normalize();
     iss.position.addScaledVector(dir, fallRate * dt);
   }
@@ -450,43 +559,16 @@ function animate(){
   updateHUD(issToEarth);
 
   // atmosphere entry status
-    if (!burnStarted && issToEarth <= atmosphereRadius + 0.02) {
+  if (!burnStarted && issToEarth <= atmosphereRadius + 0.02) {
     burnStarted = true;
     burnTimer = 0;
+    burnProgress = 0;
     console.log('Burn started');
   }
 
-  if (burnStarted) {
+  if (burnStarted && !escapedAtmosphere) {
     burnTimer += dt;
-    const progress = Math.min(1, burnTimer / burnDuration); // 0..1
-
-    const target = new THREE.Color(1.0, 0.35, 0.05);
-
-    iss.traverse((child) => {
-      if (child.isMesh) {
-        if (!child.userData._origEmissive) child.userData._origEmissive = child.material.emissive ? child.material.emissive.clone() : new THREE.Color(0x000000);
-        if (!child.userData._origColor) child.userData._origColor = child.material.color ? child.material.color.clone() : new THREE.Color(0xffffff);
-
-        if (child.material.emissive) {
-          child.material.emissive.r = child.userData._origEmissive.r + (target.r - child.userData._origEmissive.r) * progress;
-          child.material.emissive.g = child.userData._origEmissive.g + (target.g - child.userData._origEmissive.g) * progress;
-          child.material.emissive.b = child.userData._origEmissive.b + (target.b - child.userData._origEmissive.b) * progress;
-        }
-
-        if (child.material.color) {
-          child.material.color.r = child.userData._origColor.r * (1 - 0.15 * progress) + target.r * 0.15 * progress;
-          child.material.color.g = child.userData._origColor.g * (1 - 0.10 * progress) + target.g * 0.10 * progress;
-          child.material.color.b = child.userData._origColor.b * (1 - 0.05 * progress) + target.b * 0.05 * progress;
-        }
-
-        if (child.material.emissiveIntensity !== undefined) child.material.emissiveIntensity = 0.3 + progress * 1.2;
-
-        const scaleFactor = 1 + progress * 0.06;
-        child.scale.x = scaleFactor;
-        child.scale.y = scaleFactor;
-        child.scale.z = scaleFactor;
-      }
-    });
+    burnProgress = Math.min(1, burnTimer / burnDuration);
   }
 
   renderer.render(scene, camera);
