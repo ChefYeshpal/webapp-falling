@@ -54,4 +54,7 @@ Basically, the user will be the ISS controller, they gotta control stuff on the 
     * Terminal text does't overflow now
     * Added phase 4
         * altitude remains locked until phase 4 ends
+        * Fuel bar shows up
+        * longer you press it, the more fuel is used
+* 25 Oct 2025
     *
