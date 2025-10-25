@@ -131,12 +131,54 @@
               if (typeof window.startGame === 'function') {
                 window.startGame();
               }
+              setTimeout(() => {
+                if (typeof window.lockToTargetAltitude === 'function') {
+                  window.lockToTargetAltitude(0.45);
+                }
+                startPhase4();
+              }, 10000); 
             });
           }, 800);
           return;
         }
 
         console.typeWords(tutorialLines[currentLineIndex], () => {
+          currentLineIndex++;
+          console.setInputValue('');
+          console.enableConfirmation('Press Enter to continue');
+
+          console.onConfirm(() => {
+            console.clearMessages();
+            showNextLine();
+          });
+        });
+      }
+
+      showNextLine();
+    }
+
+    // ==================== PHASE 4 ====================
+    function startPhase4() {
+      console.clearMessages();
+      
+      const fuelLines = [
+        'now, you will need to reserve your fuel',
+        'in the bottom, you will see another horizontal bar',
+        'that bar, is the amount of fuel you have left',
+        'you have to reserve it as much as you can',
+        'we will send regular shipments of fuel canisters',
+        'you will need to align your height in a proper manner, to be able to reach them'
+      ];
+
+      let currentLineIndex = 0;
+
+      function showNextLine() {
+        if (currentLineIndex >= fuelLines.length) {
+          console.setInputValue('good luck');
+          return;
+        }
+
+        console.typeWords(fuelLines[currentLineIndex], () => {
           currentLineIndex++;
           console.setInputValue('');
           console.enableConfirmation('Press Enter to continue');

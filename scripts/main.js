@@ -204,7 +204,6 @@ if (modelRadius * targetScale > maxAllowedRadius) {
 
 iss.scale.setScalar(targetScale);
 
-// print ISS and camera placement in console
 console.log('ISS scale:', iss.scale.x, 'ISS position (pre-placement):', iss.position.clone());
 
 // console twerker for rotation, probs will never use this
@@ -254,6 +253,17 @@ let freezeActive = false;
 const reviveAltitudeThreshold = 0.35;
 let frozeControlsLocked = false;
 const burnCoolRate = 0.8;
+
+// alt locking system
+let targetAltitude = null;
+let altitudeLocked = false;
+const ALTITUDE_LOCK_SPEED = 0.01;
+
+window.lockToTargetAltitude = function(altitude) {
+  targetAltitude = altitude;
+  altitudeLocked = true;
+  console.log('Altitude lock engaged at', altitude, 'u');
+};
 
 // Spacebar control
 window.addEventListener('keydown', (e) => {
@@ -548,7 +558,16 @@ function animate(){
   }
   
 
-  if (!gameOver) {
+  if (altitudeLocked && targetAltitude !== null) {
+    const currentAltitude = Math.max(0, issToEarth - earthRadius);
+    const altitudeDiff = targetAltitude - currentAltitude;
+    
+    if (Math.abs(altitudeDiff) > 0.001) {
+      const dir = new THREE.Vector3().subVectors(iss.position, earth.position).normalize();
+      const adjustment = Math.sign(altitudeDiff) * Math.min(Math.abs(altitudeDiff), ALTITUDE_LOCK_SPEED * dt);
+      iss.position.addScaledVector(dir, adjustment);
+    }
+  } else if (!gameOver) {
     const dir = new THREE.Vector3().subVectors(earth.position, iss.position).normalize();
     iss.position.addScaledVector(dir, fallRate * dt);
   }
