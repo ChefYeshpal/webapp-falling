@@ -175,9 +175,6 @@
       function showNextLine() {
         if (currentLineIndex >= fuelLines.length) {
           console.setInputValue('fuel management active');
-          if (typeof window.disableAltitudeLock === 'function') {
-            window.disableAltitudeLock();
-          }
           return;
         }
 
@@ -187,6 +184,9 @@
           if (currentLineIndex === 2) {
             if (typeof window.enableFuelSystem === 'function') {
               window.enableFuelSystem();
+            }
+            if (typeof window.disableAltitudeLock === 'function') {
+              window.disableAltitudeLock();
             }
           }
           

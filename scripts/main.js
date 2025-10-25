@@ -450,7 +450,7 @@ function ensureFuelBar() {
   container.style.backgroundColor = 'rgba(40, 40, 40, 0.8)';
   container.style.border = '2px solid rgba(200, 200, 200, 0.4)';
   container.style.borderRadius = '4px';
-  container.style.overflow = 'hidden';
+  container.style.overflow = 'visible';
   container.style.zIndex = '9998';
   
   const fill = document.createElement('div');
@@ -459,15 +459,55 @@ function ensureFuelBar() {
   fill.style.height = '100%';
   fill.style.backgroundColor = 'rgba(100, 200, 255, 0.9)';
   fill.style.transition = 'width 0.1s linear';
+  fill.style.borderRadius = '2px';
+  
+  // indicator
+  const yellowIndicator = document.createElement('div');
+  yellowIndicator.style.position = 'absolute';
+  yellowIndicator.style.left = '50%';
+  yellowIndicator.style.top = '0';
+  yellowIndicator.style.width = '2px';
+  yellowIndicator.style.height = '100%';
+  yellowIndicator.style.backgroundColor = 'rgba(255, 200, 100, 0.8)';
+  yellowIndicator.style.zIndex = '1';
+
+  const redIndicator = document.createElement('div');
+  redIndicator.style.position = 'absolute';
+  redIndicator.style.left = '25%';
+  redIndicator.style.top = '0';
+  redIndicator.style.width = '2px';
+  redIndicator.style.height = '100%';
+  redIndicator.style.backgroundColor = 'rgba(255, 100, 100, 0.8)';
+  redIndicator.style.zIndex = '1';
+  const pointer = document.createElement('div');
+  pointer.id = 'fuelPointer';
+  pointer.style.position = 'absolute';
+  pointer.style.bottom = '2px';
+  pointer.style.left = '100%';
+  pointer.style.width = '0';
+  pointer.style.height = '0';
+  pointer.style.borderLeft = '6px solid transparent';
+  pointer.style.borderRight = '6px solid transparent';
+  pointer.style.borderBottom = '8px solid rgba(255, 255, 255, 0.95)';
+  pointer.style.transform = 'translateX(-50%)';
+  pointer.style.filter = 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))';
+  pointer.style.transition = 'left 0.1s linear';
+  pointer.style.zIndex = '2';
   
   container.appendChild(fill);
+  container.appendChild(yellowIndicator);
+  container.appendChild(redIndicator);
+  container.appendChild(pointer);
   document.body.appendChild(container);
 }
 
 function updateFuelBar() {
   const fill = document.getElementById('fuelBarFill');
+  const pointer = document.getElementById('fuelPointer');
+  
   if (fill) {
-    fill.style.width = `${Math.max(0, fuel)}%`;
+    const fuelPercent = Math.max(0, fuel);
+    fill.style.width = `${fuelPercent}%`;
 
     if (fuel > 50) {
       fill.style.backgroundColor = 'rgba(100, 200, 255, 0.9)';
@@ -476,6 +516,10 @@ function updateFuelBar() {
     } else {
       fill.style.backgroundColor = 'rgba(255, 100, 100, 0.9)';
     }
+  }
+  
+  if (pointer) {
+    pointer.style.left = `${Math.max(0, fuel)}%`;
   }
 }
 
@@ -548,8 +592,6 @@ function animate(){
 
   // Move ISS downward aka falling, that's the theme if you didn't know
   const issToEarth = iss.position.distanceTo(earth.position);
-
-  // freezing mechanic: check altitude
   const altitude = Math.max(0, issToEarth - earthRadius);
 
   // Check for collision with Earth - trigger game over BEFORE clipping
