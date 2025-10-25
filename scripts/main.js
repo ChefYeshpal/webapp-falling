@@ -552,6 +552,16 @@ function animate(){
   // freezing mechanic: check altitude
   const altitude = Math.max(0, issToEarth - earthRadius);
 
+  // Check for collision with Earth - trigger game over BEFORE clipping
+  const COLLISION_THRESHOLD = 0.05;
+  if (altitude < COLLISION_THRESHOLD && !gameOver) {
+    const overlay = ensureGameOverOverlay();
+    overlay.style.visibility = 'visible';
+    gameOver = true;
+    console.log('Game over - ISS crashed into Earth');
+    return;
+  }
+
   const escapedAtmosphere = burnStarted && issToEarth > atmosphereRadius + 0.05;
   if (escapedAtmosphere) {
     burnProgress = Math.max(0, burnProgress - burnCoolRate * dt);
