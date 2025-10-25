@@ -79,7 +79,7 @@
   const cursorEl = container.querySelector('.cursor');
 
   
-  const pattern = ['.', '..', '...', '....'];
+  const pattern = ['.', '..', '...'];
   let idx = 0;
   let loadingInterval;
 

@@ -265,12 +265,46 @@ window.lockToTargetAltitude = function(altitude) {
   console.log('Altitude lock engaged at', altitude, 'u');
 };
 
-// Spacebar control
+window.disableAltitudeLock = function() {
+  altitudeLocked = false;
+  targetAltitude = null;
+  console.log('Altitude lock disengaged');
+};
+
+// Fuel system
+let fuelActive = false;
+let fuel = 100;
+let spacePressed = false;
+let spacePressTime = 0;
+const BASE_FUEL_DRAIN = 0.5;
+const HOLD_MULTIPLIER = 2.5;
+const BURST_THRESHOLD = 0.3;
+
+window.enableFuelSystem = function() {
+  fuelActive = true;
+  ensureFuelBar();
+  console.log('Fuel system active');
+};
+
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Space' && gameActive && !gameOver) {
     e.preventDefault();
-    const dir = new THREE.Vector3().subVectors(iss.position, earth.position).normalize();
-    iss.position.addScaledVector(dir, boostStrength);
+    
+    if (!spacePressed) {
+      spacePressed = true;
+      spacePressTime = 0;
+    }
+    if (!fuelActive || fuel > 0) {
+      const dir = new THREE.Vector3().subVectors(iss.position, earth.position).normalize();
+      iss.position.addScaledVector(dir, boostStrength);
+    }
+  }
+});
+
+window.addEventListener('keyup', (e) => {
+  if (e.code === 'Space') {
+    spacePressed = false;
+    spacePressTime = 0;
   }
 });
 
@@ -401,6 +435,50 @@ function updateHUD(distance) {
 
 ensureHUD();
 
+// Fuel bar (horizontal at bottom)
+function ensureFuelBar() {
+  if (document.getElementById('fuelBar')) return;
+  
+  const container = document.createElement('div');
+  container.id = 'fuelBar';
+  container.style.position = 'fixed';
+  container.style.bottom = '20px';
+  container.style.left = '50%';
+  container.style.transform = 'translateX(-50%)';
+  container.style.width = '400px';
+  container.style.height = '20px';
+  container.style.backgroundColor = 'rgba(40, 40, 40, 0.8)';
+  container.style.border = '2px solid rgba(200, 200, 200, 0.4)';
+  container.style.borderRadius = '4px';
+  container.style.overflow = 'hidden';
+  container.style.zIndex = '9998';
+  
+  const fill = document.createElement('div');
+  fill.id = 'fuelBarFill';
+  fill.style.width = '100%';
+  fill.style.height = '100%';
+  fill.style.backgroundColor = 'rgba(100, 200, 255, 0.9)';
+  fill.style.transition = 'width 0.1s linear';
+  
+  container.appendChild(fill);
+  document.body.appendChild(container);
+}
+
+function updateFuelBar() {
+  const fill = document.getElementById('fuelBarFill');
+  if (fill) {
+    fill.style.width = `${Math.max(0, fuel)}%`;
+
+    if (fuel > 50) {
+      fill.style.backgroundColor = 'rgba(100, 200, 255, 0.9)';
+    } else if (fuel > 25) {
+      fill.style.backgroundColor = 'rgba(255, 200, 100, 0.9)';
+    } else {
+      fill.style.backgroundColor = 'rgba(255, 100, 100, 0.9)';
+    }
+  }
+}
+
 // camera and stuff
 const ORIGINAL_EARTH_TO_ISS = 4;
 camera.position.set(0, 1, 15);
@@ -433,7 +511,7 @@ try {
   iss.add(frostShell);
   iss.userData.frostShell = frostShell;
 } catch (err) {
-  console.warn('Could not create frost shell:', err);
+  console.warn('Could not create frost shell', err);
 }
 
 camera.position.copy(newIssPos).addScaledVector(dirFromIssToCamera, intendedCameraDist);
@@ -457,8 +535,6 @@ function animate(){
 
   const dt = clock.getDelta() * timeScale;
   const elapsed = clock.getElapsedTime() * timeScale;
-
-  // Rotate Earth on its axis
   earth.rotation.y += earthRotationSpeed * dt;
   atmosphere.rotation.y = earth.rotation.y;
 
@@ -503,6 +579,19 @@ function animate(){
 
   boostStrength = baseBoostStrength * (1 - freezeProgress);
 
+  // Fuel system
+  if (fuelActive && spacePressed && fuel > 0) {
+    spacePressTime += dt;
+  
+    let drainRate = BASE_FUEL_DRAIN;
+    if (spacePressTime > BURST_THRESHOLD) {
+      const holdMultiplier = 1 + (spacePressTime / BURST_THRESHOLD) * HOLD_MULTIPLIER;
+      drainRate *= holdMultiplier;
+    }
+    
+    fuel = Math.max(0, fuel - drainRate * dt);
+    updateFuelBar();
+  }
 
   const iceColor = new THREE.Color(0x66ccff);
   const burnColor = new THREE.Color(1.0, 0.35, 0.05);

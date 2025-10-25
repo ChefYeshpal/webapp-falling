@@ -174,12 +174,22 @@
 
       function showNextLine() {
         if (currentLineIndex >= fuelLines.length) {
-          console.setInputValue('good luck');
+          console.setInputValue('fuel management active');
+          if (typeof window.disableAltitudeLock === 'function') {
+            window.disableAltitudeLock();
+          }
           return;
         }
 
         console.typeWords(fuelLines[currentLineIndex], () => {
           currentLineIndex++;
+          
+          if (currentLineIndex === 2) {
+            if (typeof window.enableFuelSystem === 'function') {
+              window.enableFuelSystem();
+            }
+          }
+          
           console.setInputValue('');
           console.enableConfirmation('Press Enter to continue');
 
