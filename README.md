@@ -6,10 +6,17 @@
 
 Basically, the user will be the ISS controller, they gotta control stuff on the ISS. Will need to make a branching tree or something for choices and all. I'll make it up as we go
 
+## TechStack
+### Extenal libraries
+* three.js
+    * Used for building the scene and making object paths
+    
+
 ## Things I wanna have:
 
 * Add a slow rotating background, so that it looks a little bit more realistic?
-* maybe add a sun too or moon, moonfall!!!!
+* Add a hull integrety bar
+    * slowly desentigrates as it goes too hot or too cold very fast
 * 3 trillion billion ice cream chips worth of bottles
 
 ## Devlogs
@@ -40,3 +47,7 @@ Basically, the user will be the ISS controller, they gotta control stuff on the 
     * Trying to add terminal bar
         * not doing it, nope
     * Pressing space bar pushes ISS farther into the endless void of space
+        * Was having some issues where if the ISS went to burn start, then it would stay in that state, ez fix (jus use weight blending)
+        * If ISS goes too far from earth, 0.70u, it starts to freeze over and the controls lock
+    * Terminal text does't overflow now
+    * 
