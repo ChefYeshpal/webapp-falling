@@ -52,4 +52,6 @@ Basically, the user will be the ISS controller, they gotta control stuff on the 
         * Was having some issues where if the ISS went to burn start, then it would stay in that state, ez fix (jus use weight blending)
         * If ISS goes too far from earth, 0.70u, it starts to freeze over and the controls lock
     * Terminal text does't overflow now
-    * 
+    * Added phase 4
+        * altitude remains locked until phase 4 ends
+    *
