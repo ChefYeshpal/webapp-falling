@@ -111,7 +111,7 @@
         'it is basically falling faster than the earth can rotate',
         'so it forms a temporary orbit',
         'to make sure that the ISS does not crash into the earth',
-        'you have to use fuel canisters to push the earth farther',
+        'you have to use fuel canisters to push yourself farther',
         'if you look at the right corner',
         'you will notice a vertical bar',
         'red means too close to earth',
@@ -163,18 +163,24 @@
       
       const fuelLines = [
         'now, you will need to reserve your fuel',
-        'in the bottom, you will see another horizontal bar',
+        'in the bottom, you will see a horizontal bar',
         'that bar, is the amount of fuel you have left',
         'you have to reserve it as much as you can',
         'we will send regular shipments of fuel canisters',
-        'you will need to align your height in a proper manner, to be able to reach them'
+        'you will need to align your altitude in a proper manner, to be able to reach them'
       ];
 
       let currentLineIndex = 0;
 
       function showNextLine() {
         if (currentLineIndex >= fuelLines.length) {
-          console.setInputValue('fuel management active');
+          console.setInputValue('best of luck out there');
+          setTimeout(() => {
+            console.fadeOut();
+            setTimeout(() => {
+              console.container.style.display = 'none';
+            }, 700);
+          }, 2000);
           return;
         }
 
