@@ -1,17 +1,15 @@
 # webapp-falling
 
-{note to self: make sure to add a full tech stack explaining how you built your project}
-
 ## A bit about this game
 
-Basically, the user will be the ISS controller, they gotta control stuff on the ISS. Will need to make a branching tree or something for choices and all. I'll make it up as we go
+Basically, the user will be an operator in the ISS, they gotta control the ISS s that it does not fall into the earth, while making sure that it does not go too far and freeze the control. 
 
-## TechStack
+## Tech Stack
 
-### Extenal libraries
-
-* three.js
-    * Used for building the scene and making object paths
+- HTML: `index.html`
+- CSS: `styles.css`
+- JavaScript (vanilla ES6): `scripts/`
+- three.js: 3D rendering (used for scene and object paths)
 
 
 ## Things I wanna have:
@@ -56,5 +54,21 @@ Basically, the user will be the ISS controller, they gotta control stuff on the 
         * altitude remains locked until phase 4 ends
         * Fuel bar shows up
         * longer you press it, the more fuel is used
-* 25 Oct 2025
-    *
+* 26 Oct 2025
+    * I tried really, really really hard to add those canisters
+        * Literally couldn't get them to spawn in the ISS's orbit
+        * They would even some times just throw a fucking error at me, why?
+            * because I DONT KNOW HOW TO WORK WITH JS LIKE THIS!!!!!
+        * I think I took too big of a project, should have probably started with a platformer or something like that before getting into the 3d stuff...
+        * Added tech stack to readme
+        * That's it I think, nothing new
+        * Wait a minute... did I forget to add things to readme yesterday???????? bruh...
+            * ignore that then
+
+## A final thingyyyy
+
+Vallkaie and ChefYeshpal are the same person (me), just that Valkarie was my linux system and I set up user.name on it literally yesterday, so pls dont be alarmed
+
+Also, I had intended to add some more things into this project like having canisters that orbit around the earth on random altitudes but in a specific fixed path of the ISS, and the user's job would be to set the altitude so that they could refuel. However I for the life of me couldn't find out how to add that feature cause somehow I kept missing things or not being able to understand how to insert all that. 
+
+Right now the basic functions like pressing space to move up, burning if too low in altitude, and freezing if too far works. I honestly dont have the will power to do anything else in this project cause I think I picked up something that's a bit too advanced for me. Not to mention that the entire reason why I'm doing siege is to learn JS...
