@@ -30,7 +30,7 @@ scene.add(createStarField());
 // earth
 // scale: 1 scene unit = 1000 km
 
-// just adding this so I remember this shii later
+// just adding this so I remember this later
 // Earth mean radius ~ 6371 km =  6.371 units
 // ISS average altitude ~ 408 km = 0.408 units
 const UNIT_KM = 1000.0;
@@ -545,8 +545,6 @@ new THREE.Box3().setFromObject(iss).getBoundingSphere(issBoundingSphere);
 const issRadiusWorld = issBoundingSphere.radius * iss.scale.x;
 const cameraMinDist = issRadiusWorld + 0.2;
 if (intendedCameraDist < cameraMinDist) intendedCameraDist = cameraMinDist;
-
-// elsa and frozone should be a couple, totes matching
 try {
   const frostGeo = new THREE.SphereGeometry(Math.max(issRadiusWorld * 1.05, 0.01), 16, 12);
   const frostMat = new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0 });
