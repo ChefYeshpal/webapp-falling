@@ -415,7 +415,7 @@ function updateHUD(distance) {
   const label = document.getElementById('hudLabel');
   const altitude = Math.max(0, distance - earthRadius);
   const initAlt = Math.max(0.0001, earthToISSDistance - earthRadius);
-  // so that initial alt maps at middle of HUD
+  // so that initial alt maps at middle of HUD, 0.40u
   const maxAlt = Math.max(initAlt * 2, initAlt + 0.1);
   const clampedAlt = Math.max(0, Math.min(maxAlt, altitude));
   const norm = clampedAlt / maxAlt; // 0..1 (0=surface/top, 1=far/bottom)
