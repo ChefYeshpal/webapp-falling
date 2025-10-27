@@ -127,7 +127,6 @@
             console.clearMessages();
             console.typeWords('press the space bar, to push the ISS farther from the earth', () => {
               console.setInputValue('press space bar');
-              // game controls
               if (typeof window.startGame === 'function') {
                 window.startGame();
               }
@@ -167,14 +166,17 @@
         'that bar, is the amount of fuel you have left',
         'you have to reserve it as much as you can',
         'we will send regular shipments of fuel canisters',
-        'you will need to align your altitude in a proper manner, to be able to reach them'
+        'you will need to align your altitude in a proper manner, to be able to reach them',
+        'the longer you hold space, the more fuel is used',
+        'and, remember to not go too high, otherwise you might freeze the controls',
+        'best of luck out there...'
       ];
 
       let currentLineIndex = 0;
 
       function showNextLine() {
         if (currentLineIndex >= fuelLines.length) {
-          console.setInputValue('best of luck out there');
+          console.setInputValue('');
           setTimeout(() => {
             console.fadeOut();
             setTimeout(() => {
